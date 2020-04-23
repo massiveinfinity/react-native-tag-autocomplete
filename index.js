@@ -308,7 +308,7 @@ class AutoTags extends Component {
           placeholder={this.props.placeholder}
           defaultValue={query}
           value={query}
-          onChangeText={onChangeText}
+          onChangeText={this.onChangeText}
           onSubmitEditing={this.onSubmitEditing}
           multiline={true}
           autoFocus={this.props.autoFocus === false ? false : true}
