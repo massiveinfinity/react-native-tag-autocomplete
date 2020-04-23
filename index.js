@@ -87,6 +87,7 @@ class AutoTags extends Component {
      */
     inputStyle: ViewPropTypes.style,
     /**
+     * @deprecated
      * Set other props on suggestion FlatList
      */
     flatListProps: PropTypes.object,
@@ -107,6 +108,20 @@ class AutoTags extends Component {
      * Override the default suggestion list item style
      */
     suggestionListItemStyle: ViewPropTypes.style,
+    /**
+     * Set other props on suggestion FlatList
+     */
+    suggestionListProps: PropTypes.object,
+    /**
+     * Listener when suggestion list appears.
+     * (height) => {}
+     */
+    onSuggestionListShow: PropTypes.func,
+    /**
+     * Listener when suggestion list hides.
+     * () => {}
+     */
+    onSuggestionListHide: PropTypes.func,
   };
 
   state = {
@@ -169,8 +184,6 @@ class AutoTags extends Component {
     } else {
       this.setLoading();
     }
-
-    this.setLoading();
 
     if (this.timeout) {
       clearTimeout(this.timeout);
@@ -301,6 +314,10 @@ class AutoTags extends Component {
   };
 
   clearSuggestions = () => {
+    if (this.props.onSuggestionListHide) {
+      this.props.onSuggestionListHide();
+    }
+
     this.setState({
       suggestions: [],
       noResultsFound: false,
@@ -309,6 +326,7 @@ class AutoTags extends Component {
 
   render() {
     const { query, noResultsFound, suggestions } = this.state;
+    //const data = this.filterData(query);
 
     const data = suggestions;
 
@@ -383,6 +401,14 @@ class AutoTags extends Component {
           onFocus={(ev) => {
             const query = ev.nativeEvent.text;
             this.onChangeText(query);
+          }}
+          flatListProps={{
+            onContentSizeChange: (newWidth, newHeight) => {
+              if (this.props.onSuggestionListShow) {
+                this.props.onSuggestionListShow(newHeight);
+              }
+            },
+            ...this.props.suggestionListProps,
           }}
           {...this.props}
         />
