@@ -46,20 +46,25 @@ render() {
 
 ### Props
 
-| Prop               |   Type   | Required | Description                                                                                      |
-| :----------------- | :------: | :------: | :----------------------------------------------------------------------------------------------- |
-| suggestions        |  array   |   yes    | Array of suggestion objects. They must have a 'name' prop if not overriding filter && renderTags |
-| tagsSelected       |  array   |   yes    | List of tags that have already been selected                                                     |
-| handleAddition     | function |   yes    | Handler for when suggestion is selected (normally just push to tagsSelected)                     |
-| handleDelete       | function |   yes    | Handler called with index when tag is clicked                                                    |
-| placeholder        |  string  |    no    | Input placeholder                                                                                |
-| renderTags         | function |    no    | Override the render tags and it's styles                                                         |
-| renderSuggestion   | function |    no    | Override the suggestions dropdown items                                                          |
-| filterData         | function |    no    | Override the search function, allows you to filter by props other than name                      |
-| onCustomTagCreated | function |    no    | Function called with user input when user presses enter                                          |
-| createTagOnSpace   | boolean  |    no    | calls onCustomTagCreated when user presses space                                                 |
-| tagStyles          |  object  |    no    | Override the default tag styling                                                                 |
-| tagsOrientedBelow  | boolean  |    no    | Move tags below the input instead of above (default).                                            |
+| Prop                     |   Type   | Required | Description                                                                                      |
+| :----------------------- | :------: | :------: | :----------------------------------------------------------------------------------------------- |
+| tagsSelected             |  array   |   yes    | List of tags that have already been selected                                                     |
+| handleAddition           | function |   yes    | Handler for when suggestion is selected (normally just push to tagsSelected)                     |
+| handleDelete             | function |   yes    | Handler called with index when tag is clicked                                                    |
+| placeholder              |  string  |    no    | Input placeholder                                                                                |
+| placeholderTextColor     |  string  |    no    | Set input placeholder text color                                                                 |
+| renderTags               | function |    no    | Override the render tags and it's styles                                                         |
+| renderSuggestion         | function |    no    | Override the suggestions dropdown items                                                          |
+| onCustomTagCreated       | function |    no    | Function called with user input when user presses enter                                          |
+| createTagOnSpace         | boolean  |    no    | calls onCustomTagCreated when user presses space                                                 |
+| tagStyles                |  object  |    no    | Override the default tag styling                                                                 |
+| tagsOrientedBelow        | boolean  |    no    | Move tags below the input instead of above (default)                                             |
+| onInputChangeText        | function |    no    | Function callback ((text, onSuccess, onError) => {}) when user has finish typing                 |
+| inputStyle               |  object  |    no    | Override the default input text styling                                                          |
+| flatListProps            |  object  |    no    | Set other props on suggestion FlatList                                                           |
+| debounceTimer            |  number  |    no    | Override the default debounce timer (Default at 200 milliseconds)                                |
+| (Deprecated) suggestions |  array   |   yes    | Array of suggestion objects. They must have a 'name' prop if not overriding filter && renderTags |
+| (Deprecated) filterData  | function |    no    | Override the search function, allows you to filter by props other than name                      |
 
 ### Android
 
@@ -98,7 +103,6 @@ const styles = StyleSheet.create({
   }
 });
 ```
-
 
 ## Pull Requests
 
