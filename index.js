@@ -363,8 +363,9 @@ class AutoTags extends Component {
             width: this.state.autoCompleteWidth,
           }}
           listStyle={{
+            backgroundColor: 'white',
             borderTopWidth: 1,
-            top: 10,
+            top: this.props.tagsSelected.length > 0 ? 0 : 10,
             shadowColor: '#000',
             shadowOffset: {
               width: 0,
@@ -372,9 +373,17 @@ class AutoTags extends Component {
             },
             shadowOpacity: 0.2,
             shadowRadius: 1.41,
-            elevation: 7,
+            zIndex: 1000,
+            elevation: 4,
           }}
           style={this.props.inputStyle}
+          onBlur={() => {
+            this.clearSuggestions();
+          }}
+          onFocus={(ev) => {
+            const query = ev.nativeEvent.text;
+            this.onChangeText(query);
+          }}
           {...this.props}
         />
         {this.props.tagsOrientedBelow &&
