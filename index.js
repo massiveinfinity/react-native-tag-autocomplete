@@ -168,7 +168,8 @@ class AutoTags extends Component {
       //TODO: on ios, delete last tag on backspace event && empty query
       //(impossible on android atm, no listeners for empty backspace)
     }
-    if (this.props.onInputChangeText) return this.props.onInputChangeText(text);
+    if (this.props.onInputChangeText)
+      return this.props.onInputChangeText(text, this.onSuccess, this.onError);
     if (
       this.props.createTagOnSpace &&
       this.props.onCustomTagCreated &&
