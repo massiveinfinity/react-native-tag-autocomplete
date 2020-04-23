@@ -13,6 +13,8 @@ import Autocomplete from 'react-native-autocomplete-input';
 
 // In milliseconds
 const DEBOUNCE_TIMER = 200;
+const DEFAULT_MAX_SUGGESTIONS_COUNT = 5;
+const TYPE_NO_RESULTS_FOUND = 'NO_RESULTS';
 const ViewPropTypes = RNViewPropTypes || View.propTypes;
 
 class AutoTags extends Component {
@@ -93,6 +95,18 @@ class AutoTags extends Component {
      * (Default at 200 milliseconds)
      */
     debounceTimer: PropTypes.number,
+    /**
+     * Render layout of inner tags.
+     */
+    renderInnerTags: PropTypes.func,
+    /**
+     * Max Suggestion count
+     */
+    maxSuggestionsCount: PropTypes.number,
+    /**
+     * Override the default suggestion list item style
+     */
+    suggestionListItemStyle: ViewPropTypes.style,
   };
 
   state = {
@@ -109,7 +123,7 @@ class AutoTags extends Component {
   }
 
   getNoResultsPlaceholder = () => {
-    return [{ name: 'No results found' }];
+    return [{ type: TYPE_NO_RESULTS_FOUND, name: 'No results found' }];
   };
 
   renderTags = () => {
@@ -135,7 +149,11 @@ class AutoTags extends Component {
               style={[tagMargins, styles.tag]}
               onPress={() => this.props.handleDelete(i)}
             >
-              <Text>{t.name}</Text>
+              {this.props.renderInnerTags ? (
+                this.props.renderInnerTags({ item: t, index: i })
+              ) : (
+                <Text>{t.name}</Text>
+              )}
             </TouchableHighlight>
           );
         })}
@@ -148,7 +166,8 @@ class AutoTags extends Component {
     if (text === null || text === undefined || text.length === 0) {
       this.removeLoading();
       this.clearSuggestions();
-      return;
+    } else {
+      this.setLoading();
     }
 
     this.setLoading();
@@ -244,7 +263,10 @@ class AutoTags extends Component {
 
     if (data.length > 0) {
       this.setState({
-        suggestions: data,
+        suggestions: data.splice(
+          0,
+          this.props.maxSuggestionsCount || DEFAULT_MAX_SUGGESTIONS_COUNT
+        ),
       });
     } else {
       this.setState({
@@ -287,7 +309,6 @@ class AutoTags extends Component {
 
   render() {
     const { query, noResultsFound, suggestions } = this.state;
-    //const data = this.filterData(query);
 
     const data = suggestions;
 
@@ -318,10 +339,16 @@ class AutoTags extends Component {
               disabled={this.state.noResultsFound}
               onPress={(e) => this.addTag(item)}
             >
-              {this.props.renderSuggestion ? (
+              {item.type && item.type === TYPE_NO_RESULTS_FOUND ? (
+                <Text style={this.props.suggestionListItemStyle} key={i}>
+                  {item.name}
+                </Text>
+              ) : this.props.renderSuggestion ? (
                 this.props.renderSuggestion({ item, index: i })
               ) : (
-                <Text key={i}>{item.name}</Text>
+                <Text style={this.props.suggestionListItemStyle} key={i}>
+                  {item.name}
+                </Text>
               )}
             </TouchableOpacity>
           )}
@@ -334,6 +361,18 @@ class AutoTags extends Component {
           listContainerStyle={{
             backgroundColor: 'white',
             width: this.state.autoCompleteWidth,
+          }}
+          listStyle={{
+            borderTopWidth: 1,
+            top: 10,
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.2,
+            shadowRadius: 1.41,
+            elevation: 7,
           }}
           style={this.props.inputStyle}
           {...this.props}
