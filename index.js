@@ -15,6 +15,7 @@ import Autocomplete from 'react-native-autocomplete-input';
 const DEBOUNCE_TIMER = 200;
 const DEFAULT_MAX_SUGGESTIONS_COUNT = 5;
 const TYPE_NO_RESULTS_FOUND = 'NO_RESULTS';
+const TYPE_ERROR = 'ERROR';
 const ViewPropTypes = RNViewPropTypes || View.propTypes;
 
 class AutoTags extends Component {
@@ -122,12 +123,18 @@ class AutoTags extends Component {
      * () => {}
      */
     onSuggestionListHide: PropTypes.func,
+    /**
+     * Set empty results message
+     */
+    emptyResults: PropTypes.string,
   };
 
   state = {
     query: '',
     suggestions: [],
     noResultsFound: false,
+    isError: false,
+    errorMessage: null,
     autoCompleteWidth: 200,
     isLoading: false,
   };
@@ -138,7 +145,15 @@ class AutoTags extends Component {
   }
 
   getNoResultsPlaceholder = () => {
-    return [{ type: TYPE_NO_RESULTS_FOUND, name: 'No results found' }];
+    return [{ __type: TYPE_NO_RESULTS_FOUND, name: 'No results found' }];
+  };
+
+  getErrorPlaceholder = () => {
+    return [
+      {
+        __type: TYPE_ERROR,
+      },
+    ];
   };
 
   renderTags = () => {
@@ -220,7 +235,7 @@ class AutoTags extends Component {
       return; // prevent onSubmit bugs
     }
 
-    this.setState({ query: text, noResultsFound: false });
+    this.setState({ query: text, noResultsFound: false, isError: false });
   };
 
   filterData = (query) => {
@@ -289,8 +304,11 @@ class AutoTags extends Component {
   };
 
   onError = (err) => {
-    console.log('Err', err);
     this.removeLoading();
+    this.setState({
+      isError: true,
+      errorMessage: err,
+    });
   };
 
   setLoading = () => {
@@ -321,14 +339,58 @@ class AutoTags extends Component {
     this.setState({
       suggestions: [],
       noResultsFound: false,
+      isError: false,
     });
   };
 
-  render() {
-    const { query, noResultsFound, suggestions } = this.state;
-    //const data = this.filterData(query);
+  getItemForRender = ({ item, index }) => {
+    if (item.__type === TYPE_ERROR) {
+      return (
+        <Text style={this.props.suggestionListItemStyle} key={index}>
+          {this.state.errorMessage}
+        </Text>
+      );
+    } else if (item.__type === TYPE_NO_RESULTS_FOUND) {
+      return (
+        <Text style={this.props.suggestionListItemStyle} key={index}>
+          {this.props.emptyResults || item.name}
+        </Text>
+      );
+    } else if (this.props.renderSuggestion) {
+      return this.props.renderSuggestion({ item, index });
+    } else {
+      return (
+        <Text style={this.props.suggestionListItemStyle} key={index}>
+          {item.name}
+        </Text>
+      );
+    }
+  };
 
-    const data = suggestions;
+  isRenderItemDisabled = () => {
+    const { noResultsFound, isError } = this.state;
+    return noResultsFound || isError;
+  };
+
+  render() {
+    const {
+      query,
+      suggestions,
+      noResultsFound,
+      isError,
+      errorMessage,
+    } = this.state;
+
+    //const data = this.filterData(query);
+    let data = [];
+
+    if (noResultsFound) {
+      data = [...this.getNoResultsPlaceholder()];
+    } else if (isError) {
+      data = [...this.getErrorPlaceholder()];
+    } else {
+      data = suggestions;
+    }
 
     return (
       <View
@@ -343,7 +405,7 @@ class AutoTags extends Component {
           this.props.tagsSelected &&
           this.renderTags()}
         <Autocomplete
-          data={noResultsFound ? this.getNoResultsPlaceholder() : data}
+          data={data}
           controlled={true}
           placeholder={this.props.placeholder}
           defaultValue={query}
@@ -354,20 +416,10 @@ class AutoTags extends Component {
           autoFocus={this.props.autoFocus === false ? false : true}
           renderItem={({ item, i }) => (
             <TouchableOpacity
-              disabled={this.state.noResultsFound}
+              disabled={this.isRenderItemDisabled()}
               onPress={(e) => this.addTag(item)}
             >
-              {item.type && item.type === TYPE_NO_RESULTS_FOUND ? (
-                <Text style={this.props.suggestionListItemStyle} key={i}>
-                  {item.name}
-                </Text>
-              ) : this.props.renderSuggestion ? (
-                this.props.renderSuggestion({ item, index: i })
-              ) : (
-                <Text style={this.props.suggestionListItemStyle} key={i}>
-                  {item.name}
-                </Text>
-              )}
+              {this.getItemForRender({ item, index: i })}
             </TouchableOpacity>
           )}
           inputContainerStyle={[
