@@ -16,11 +16,10 @@ const DEBOUNCE_TIMER = 200;
 const ViewPropTypes = RNViewPropTypes || View.propTypes;
 
 class AutoTags extends Component {
-
   static propTypes = {
     /**
      * @deprecated
-     * Array of suggestion objects. They must have a 
+     * Array of suggestion objects. They must have a
      * 'name' prop if not overriding filter && renderTags
      */
     suggestions: PropTypes.array,
@@ -30,7 +29,7 @@ class AutoTags extends Component {
      */
     tagsSelected: PropTypes.array,
     /**
-     * Handler for when suggestion is selected 
+     * Handler for when suggestion is selected
      * (normally just push to tagsSelected)
      */
     handleAddition: PropTypes.func,
@@ -42,9 +41,9 @@ class AutoTags extends Component {
      * Input placeholder
      */
     placeholder: PropTypes.string,
-  /**
-   * Set input placeholder text color
-   */
+    /**
+     * Set input placeholder text color
+     */
     placeholderTextColor: PropTypes.string,
     /**
      * Override the render tags and its styles
@@ -56,7 +55,7 @@ class AutoTags extends Component {
     renderSuggestion: PropTypes.func,
     /**
      * @deprecated
-     * Override the search function, allows you 
+     * Override the search function, allows you
      * to filter by props other than name
      */
     filterData: PropTypes.func,
@@ -77,7 +76,7 @@ class AutoTags extends Component {
      */
     tagsOrientedBelow: PropTypes.bool,
     /**
-     * Function callback ((text, onSuccess, onError) => {}) 
+     * Function callback ((text, onSuccess, onError) => {})
      * when user has finish typing
      */
     onInputChangeText: PropTypes.func,
@@ -93,7 +92,7 @@ class AutoTags extends Component {
      * Override the default debounce timer
      * (Default at 200 milliseconds)
      */
-    debounceTimer: PropTypes.number
+    debounceTimer: PropTypes.number,
   };
 
   state = {
@@ -325,15 +324,15 @@ class AutoTags extends Component {
               )}
             </TouchableOpacity>
           )}
-          inputContainerStyle={
+          inputContainerStyle={[
             this.props.inputContainerStyle || styles.inputContainerStyle,
             this.props.tagsSelected.length > 0 ? { marginBottom: 8 } : null,
-          }
+          ]}
           containerStyle={this.props.containerStyle || styles.containerStyle}
           underlineColorAndroid="transparent"
           listContainerStyle={{
             backgroundColor: 'white',
-            width: this.state.autoCompleteWidth
+            width: this.state.autoCompleteWidth,
           }}
           style={this.props.inputStyle}
           {...this.props}
@@ -342,11 +341,13 @@ class AutoTags extends Component {
           this.props.tagsSelected &&
           this.renderTags()}
         {this.state.isLoading && (
-          <View style={{
-            position: 'absolute', 
-            bottom: this.props.tagsSelected.length > 0 ? 8 : 0, 
-            right: 0
-          }}>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: this.props.tagsSelected.length > 0 ? 8 : 0,
+              right: 0,
+            }}
+          >
             <ActivityIndicator />
           </View>
         )}
@@ -357,21 +358,21 @@ class AutoTags extends Component {
 
 const styles = StyleSheet.create({
   AutoTags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
     marginTop: 8,
   },
   tags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
     width: '100%',
   },
   tag: {
-    backgroundColor: "rgb(244, 244, 244)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgb(244, 244, 244)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 4,
     borderRadius: 30,
     paddingTop: 8,
@@ -382,13 +383,13 @@ const styles = StyleSheet.create({
   inputContainerStyle: {
     borderRadius: 0,
     width: '100%',
-    justifyContent: "center",
-    borderColor: "transparent",
-    alignItems: "stretch",
+    justifyContent: 'center',
+    borderColor: 'transparent',
+    alignItems: 'stretch',
   },
   containerStyle: {
     minWidth: 200,
-  }
+  },
 });
 
 export default AutoTags;
