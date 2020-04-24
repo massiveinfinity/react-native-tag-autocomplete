@@ -4,11 +4,11 @@ import {
   StyleSheet,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
   View,
   ViewPropTypes as RNViewPropTypes,
   ActivityIndicator,
 } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import Autocomplete from 'react-native-autocomplete-input';
 
 // In milliseconds
@@ -373,13 +373,7 @@ class AutoTags extends Component {
   };
 
   render() {
-    const {
-      query,
-      suggestions,
-      noResultsFound,
-      isError,
-      errorMessage,
-    } = this.state;
+    const { query, suggestions, noResultsFound, isError } = this.state;
 
     //const data = this.filterData(query);
     let data = [];
@@ -424,7 +418,7 @@ class AutoTags extends Component {
           )}
           inputContainerStyle={[
             this.props.inputContainerStyle || styles.inputContainerStyle,
-            this.props.tagsSelected.length > 0 ? { marginBottom: 8 } : null,
+            // this.props.tagsSelected.length > 0 ? { marginBottom: 8 } : null,
           ]}
           containerStyle={this.props.containerStyle || styles.containerStyle}
           underlineColorAndroid="transparent"
@@ -433,9 +427,12 @@ class AutoTags extends Component {
             width: this.state.autoCompleteWidth,
           }}
           listStyle={{
+            position: 'absolute',
             backgroundColor: 'white',
             borderTopWidth: 1,
-            top: this.props.tagsSelected.length > 0 ? 0 : 10,
+            top: 0,
+            left: 0,
+            right: 0,
             shadowColor: '#000',
             shadowOffset: {
               width: 0,
@@ -443,16 +440,16 @@ class AutoTags extends Component {
             },
             shadowOpacity: 0.2,
             shadowRadius: 1.41,
-            zIndex: 1000,
-            elevation: 4,
+            elevation: 10,
+            zIndex: 2000,
           }}
           style={this.props.inputStyle}
           onBlur={() => {
             this.clearSuggestions();
           }}
           onFocus={(ev) => {
-            const query = ev.nativeEvent.text;
-            this.onChangeText(query);
+            const textQuery = ev.nativeEvent.text || this.state.query;
+            this.onChangeText(textQuery);
           }}
           flatListProps={{
             onContentSizeChange: (newWidth, newHeight) => {
