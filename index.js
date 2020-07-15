@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TouchableHighlight,
+  TouchableOpacity as RNTouchableOpacity,
   View,
   ViewPropTypes as RNViewPropTypes,
   ActivityIndicator,
@@ -127,6 +128,14 @@ class AutoTags extends Component {
      * Set empty results message
      */
     emptyResults: PropTypes.string,
+
+    tagGap: PropTypes.number,
+    isDropdown: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    tagGap: 4,
+    isDropdown: false,
   };
 
   state = {
@@ -161,22 +170,24 @@ class AutoTags extends Component {
       return this.props.renderTags(this.props.tagsSelected);
     }
 
+    const tagGap = this.props.tagGap === undefined ? 4 : this.props.tagGap;
+
     const tagMargins = this.props.tagsOrientedBelow
-      ? { marginBottom: 5 }
-      : { marginTop: 5 };
+      ? { marginBottom: tagGap }
+      : { marginTop: tagGap };
 
     return (
       <View
         style={[
           this.props.tagStyles || styles.tags,
-          this.props.tagsSelected.length > 0 ? { marginBottom: 4 } : null,
+          this.props.tagsSelected.length > 0 ? { marginBottom: tagGap } : null,
         ]}
       >
         {this.props.tagsSelected.map((t, i) => {
           return (
             <TouchableHighlight
               key={i}
-              style={[tagMargins, styles.tag]}
+              style={[tagMargins, styles.tag, { marginRight: tagGap }]}
               onPress={() => this.props.handleDelete(i)}
             >
               {this.props.renderInnerTags ? (
@@ -372,6 +383,10 @@ class AutoTags extends Component {
     return noResultsFound || isError;
   };
 
+  close() {
+    this.clearSuggestions();
+  }
+
   render() {
     const { query, suggestions, noResultsFound, isError } = this.state;
 
@@ -386,96 +401,149 @@ class AutoTags extends Component {
       data = suggestions;
     }
 
+    const dropdownProps = this.props.isDropdown
+      ? {
+          renderTextInput: () => {
+            return this.props.tagsSelected.length > 0 ? null : (
+              <Text
+                style={[
+                  this.props.inputStyle,
+                  { color: this.props.placeholderTextColor },
+                  { marginBottom: 8 },
+                ]}
+                numberOfLines={1}
+              >
+                {this.props.placeholder}
+              </Text>
+            );
+          },
+        }
+      : {};
+
+    const autocompleteProps = {
+      ...this.props,
+      ...dropdownProps,
+    };
+    delete autocompleteProps.onFocus;
+    delete autocompleteProps.onBlur;
+    delete autocompleteProps.ref;
+
     return (
-      <View
-        style={styles.AutoTags}
-        onLayout={(ev) => {
-          this.setState({
-            autoCompleteWidth: ev.nativeEvent.layout.width,
-          });
+      <RNTouchableOpacity
+        onPress={() => {
+          this.handleInput('');
         }}
+        disabled={!this.props.isDropdown}
       >
-        {!this.props.tagsOrientedBelow &&
-          this.props.tagsSelected &&
-          this.renderTags()}
-        <Autocomplete
-          data={data}
-          controlled={true}
-          placeholder={this.props.placeholder}
-          defaultValue={query}
-          value={query}
-          onChangeText={this.onChangeText}
-          onSubmitEditing={this.onSubmitEditing}
-          multiline={true}
-          autoFocus={this.props.autoFocus === false ? false : true}
-          renderItem={({ item, i }) => (
-            <TouchableOpacity
-              disabled={this.isRenderItemDisabled()}
-              onPress={(e) => this.addTag(item)}
-            >
-              {this.getItemForRender({ item, index: i })}
-            </TouchableOpacity>
-          )}
-          inputContainerStyle={[
-            this.props.inputContainerStyle || styles.inputContainerStyle,
-            // this.props.tagsSelected.length > 0 ? { marginBottom: 8 } : null,
-          ]}
-          containerStyle={this.props.containerStyle || styles.containerStyle}
-          underlineColorAndroid="transparent"
-          listContainerStyle={{
-            backgroundColor: 'white',
-            width: this.state.autoCompleteWidth,
+        <View
+          style={[styles.AutoTags, this.props.tagContainerStyle]}
+          onLayout={(ev) => {
+            this.setState({
+              autoCompleteWidth: ev.nativeEvent.layout.width,
+            });
           }}
-          listStyle={{
-            position: 'absolute',
-            backgroundColor: 'white',
-            borderTopWidth: 1,
-            top: 0,
-            left: 0,
-            right: 0,
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: 1,
-            },
-            shadowOpacity: 0.2,
-            shadowRadius: 1.41,
-            elevation: 10,
-            zIndex: 2000,
-          }}
-          style={this.props.inputStyle}
-          onBlur={() => {
-            this.clearSuggestions();
-          }}
-          onFocus={(ev) => {
-            const textQuery = ev.nativeEvent.text || this.state.query;
-            this.onChangeText(textQuery);
-          }}
-          flatListProps={{
-            onContentSizeChange: (newWidth, newHeight) => {
-              if (this.props.onSuggestionListShow) {
-                this.props.onSuggestionListShow(newHeight);
-              }
-            },
-            ...this.props.suggestionListProps,
-          }}
-          {...this.props}
-        />
-        {this.props.tagsOrientedBelow &&
-          this.props.tagsSelected &&
-          this.renderTags()}
-        {this.state.isLoading && (
-          <View
-            style={{
-              position: 'absolute',
-              bottom: this.props.tagsSelected.length > 0 ? 8 : 0,
-              right: 0,
+        >
+          {!this.props.tagsOrientedBelow &&
+            this.props.tagsSelected &&
+            this.renderTags()}
+          <Autocomplete
+            data={data}
+            controlled={true}
+            placeholder={this.props.placeholder}
+            defaultValue={query}
+            value={query}
+            onChangeText={this.onChangeText}
+            onSubmitEditing={this.onSubmitEditing}
+            multiline={true}
+            autoFocus={this.props.autoFocus === false ? false : true}
+            renderItem={({ item, i }) => (
+              <TouchableOpacity
+                disabled={this.isRenderItemDisabled()}
+                onPress={(e) => this.addTag(item)}
+              >
+                {this.getItemForRender({ item, index: i })}
+              </TouchableOpacity>
+            )}
+            inputContainerStyle={[
+              this.props.inputContainerStyle || styles.inputContainerStyle,
+              // this.props.tagsSelected.length > 0 ? { marginBottom: 8 } : null,
+            ]}
+            containerStyle={this.props.containerStyle || styles.containerStyle}
+            underlineColorAndroid="transparent"
+            listContainerStyle={{
+              backgroundColor: 'white',
+              width: this.state.autoCompleteWidth,
             }}
-          >
-            <ActivityIndicator />
-          </View>
-        )}
-      </View>
+            listStyle={{
+              position: 'absolute',
+              backgroundColor: 'white',
+              borderTopWidth: 1,
+              top: 0,
+              left: 0,
+              right: 0,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 1,
+              },
+              shadowOpacity: 0.2,
+              shadowRadius: 1.41,
+              elevation: 10,
+              zIndex: 2000,
+            }}
+            style={this.props.inputStyle}
+            onBlur={() => {
+              this.clearSuggestions();
+
+              if (this.props.onBlur) {
+                this.props.onBlur();
+              }
+            }}
+            onFocus={(ev) => {
+              const textQuery = ev.nativeEvent.text || this.state.query;
+              this.onChangeText(textQuery);
+
+              if (this.props.onFocus) {
+                this.props.onFocus();
+              }
+            }}
+            flatListProps={{
+              onContentSizeChange: (newWidth, newHeight) => {
+                if (this.props.onSuggestionListShow) {
+                  this.props.onSuggestionListShow(newHeight);
+                }
+              },
+              ...this.props.suggestionListProps,
+            }}
+            {...autocompleteProps}
+          />
+          {this.props.tagsOrientedBelow &&
+            this.props.tagsSelected &&
+            this.renderTags()}
+          {this.props.dropdownIcon && (
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 14,
+                right: 0,
+              }}
+            >
+              {this.props.dropdownIcon}
+            </View>
+          )}
+          {this.state.isLoading && (
+            <View
+              style={{
+                position: 'absolute',
+                bottom: this.props.tagsSelected.length > 0 ? 8 : 0,
+                right: 0,
+              }}
+            >
+              <ActivityIndicator />
+            </View>
+          )}
+        </View>
+      </RNTouchableOpacity>
     );
   }
 }
@@ -497,7 +565,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(244, 244, 244)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 4,
     borderRadius: 30,
     paddingTop: 8,
     paddingBottom: 8,
